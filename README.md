@@ -7,7 +7,7 @@ Automated exploration of files in a folder structure to extract metadata and pot
 * [x] Recursive approach to get all files in a directory
 * [x] Extracting formats and size of the files
 * [x] Number of lines when a file is plain text
-* [x] Supporting formats such as: `txt`, `csv`, `tab`, `excel`, `dat`.
+* [x] Supporting formats such as: `txt`, `csv`, `tab`, `dat`, `excel`.
 * [ ] Pending supported formats `arff`, `json`, `xml`.
 * [x] Identifies separator and quote character for text files
 * [ ] Loading them in memory
