@@ -173,10 +173,9 @@ def reckon_phase(target_folder = '.', export_results = True):
     # Creates a list to store temporal results about the files with its path, name,
     # extension, size, human readable size, and number of lines in the file.
     files = []
-    columns = ['path', 'name', 'extension', 'size', 'human_readable', 'lines', 'sheet_name']
+    columns = ['path', 'name', 'extension', 'size', 'human_readable', 'lines']
     print('Processing files...')
     for i, f in tqdm(enumerate(all_files), total = len(all_files)):
-    #for i, f in enumerate(all_files):
         file_name = get_file_basename(f)
         file_extension = get_file_extension(f)
         file_size = get_file_size(f)
@@ -185,14 +184,15 @@ def reckon_phase(target_folder = '.', export_results = True):
         if file_extension.lower() in SUPPORTED_FORMATS:
             if file_extension in PLAIN_FORMATS:
                 lines_count = get_lines_count(f)
+                files.append((f, file_name, file_extension, file_size, hr_size, lines_count))
             elif file_extension == 'xlsx':
                 excel_file = pd.ExcelFile(f)
                 for sheet_name in excel_file.sheet_names:
                     df_sheet = pd.read_excel(f, sheet_name = sheet_name)
-                    files.append((f, file_name, file_extension, file_size, hr_size, len(df_sheet), sheet_name))
+                    files.append((f, sheet_name, file_extension, file_size, hr_size, len(df_sheet)))
             else:
                 lines_count = None
-            files.append((f, file_name, file_extension, file_size, hr_size, lines_count))
+                files.append((f, file_name, file_extension, file_size, hr_size, lines_count))
         else:
             pass
     
