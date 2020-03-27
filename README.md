@@ -21,7 +21,7 @@ It works in three phases:
 * Phase 2: Execution. Generation of python code to load the files to memory. 
 * Phase 3: Option to send it to a database or exporting the files to a different format.
 
-Read the [documentation](docs/documentation.md) to know how to use it.
+Read the [documentation](docs/documentation.md) to know how to use it or check out the [notebook-example](code/notebook-example.ipynb).
 
 ## Phase 1
 
@@ -33,7 +33,7 @@ import auto_fe as afe
 df_files = afe.reckon_phase('<YOUR_FILE_PATH>')
 ```
 
-Checkout the [example.py](code/example.py) file and then run it from a terminal with python.
+Checkout the [example.py](code/example.py) file and then run it from a terminal with python as the following code, or using a Jupyter [notebook](code/notebook-example.ipynb).
 
 ```python
 python example.py

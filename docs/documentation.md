@@ -23,7 +23,9 @@ Checkout the [example.py](../code/example.py) file and run it from a terminal wi
 python example.py
 ```
 
-You can do the same from a Jupyter notebook.
+You can do the same from a Jupyter [notebook](../code/notebook-example.ipynb).
+
+**Functions**
 
 * The `reckon_phase()` function will generate an Excel file with the results of the exploration called `files_explored.xlsx`.
 

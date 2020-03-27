@@ -4,7 +4,8 @@ from os import listdir
 from os.path import isfile, isdir, join
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
+#from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from pandas_profiling import ProfileReport
 
 SUPPORTED_FORMATS = ('txt','csv','tab','dat','json','arff','xml','xlsx')
