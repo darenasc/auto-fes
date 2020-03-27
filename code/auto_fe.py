@@ -7,7 +7,7 @@ import numpy as np
 from tqdm import tqdm
 from pandas_profiling import ProfileReport
 
-SUPPORTED_FORMATS = ('txt','csv','tab','dat','json','arff','xml')
+SUPPORTED_FORMATS = ('txt','csv','tab','dat','json','arff','xml','xlsx')
 PLAIN_FORMATS = ('txt','csv','tab','dat')
 SIZE_UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB']
 SEPARATORS = ['\t', ' ', ',', ';', '|']
@@ -148,7 +148,9 @@ def get_separator(file_path, header = True):
     return sep
 
 def export_reckon_report(df, extension = 'xlsx'):
-    
+    """
+    This function exports the results of the reckon phase to an excel file.
+    """
     if extension == 'xlsx':
         file_name = 'files_explored.xlsx'
         df.to_excel(file_name, sheet_name = 'files')
@@ -211,3 +213,109 @@ def reckon_phase(target_folder = '.', export_results = True):
         export_reckon_report(df)
         
     return df
+
+# PHASE 2
+
+def get_separator_char(sep):
+    """
+    Returns the char used as separator.
+    """
+    for i, r in enumerate(SEPARATOR_NAMES):
+        if sep == r:
+            return SEPARATORS[i]
+    return ','
+
+def profile_file(file_path, file_name, extension, output_path = '.', sep = None):
+    """
+    This function will load the given file using pandas and then will create a report using pandas-profiling.
+    """
+    try:
+        if extension in PLAIN_FORMATS:
+            separator = get_separator_char(sep)
+            df = pd.read_csv(file_path, sep = separator)
+            profile = ProfileReport(df)
+            file_name = file_name.split('.')[0]
+            report_name = '{}.html'.format(file_name)
+            profile.to_file(report_name)
+            return 
+        elif extension == 'xlsx':
+            excel_name = get_file_basename(file_path).split('.')[0]
+            excel_name += '_' + file_name
+            df = pd.read_excel(file_path, sheet_name=file_name)
+            profile = ProfileReport(df)
+            report_name = '{}.html'.format(excel_name)
+            profile.to_file(report_name)
+        else:
+            return 
+    except:
+        print("Can't open {}".format(file_path))
+        return 
+    
+def generate_code(file_path, file_name, extension, output_path = '.', sep = None, prefix = 'df_'):
+    """
+    This function returns generated python code to load the files to memory using pandas.
+    """
+    def get_separator_char(sep):
+        if sep == 'space':
+            separator = ' '
+        elif sep == 'tab':
+            separator = '\\t'
+        elif sep == 'semi_colon':
+            separator = ';'
+        elif sep == 'comma':
+            separator = ','
+        elif sep == 'pipe':
+            separator = '|'
+        else:
+            separator = ','
+        return separator
+    
+    df_name = file_name.split('.')[0].replace(' ', '_').replace('-', '_')
+    if extension in PLAIN_FORMATS:
+        separator = get_separator_char(sep)
+        code = """{}{} = pd.read_csv('{}', sep = '{}')\n""".format(prefix, df_name, file_path, separator)
+        return code
+    elif extension == 'xlsx':
+        excel_name = get_file_basename(file_path).split('.')[0]
+        excel_name += '_' + file_name
+        code = ''''''
+        excel_name = excel_name.replace(' ', '_').replace('-', '_')
+        code = """{}{} = pd.read_excel('{}', sheet_name = '{}')\n""".format(prefix, excel_name, file_path, file_name)
+        return code
+    else:
+        return ""
+
+def generate_python_code(df, verbose = True, python_file = 'code.txt'):
+    """
+    This functions receives the dataframe generated in the reckon phase and will generate python code to load each file.
+    It will write a 'code.txt' file with the scripts.
+    The verbose option is to print the code to the standard output.
+    """
+    print('Generating python code and saving it to "{}"'.format(python_file))
+    code = '''import pandas as pd\n\n'''
+    for i, r in tqdm(df.iterrows(), total = len(df)):
+        code += generate_code(r.path, r['name'], r.extension, sep = r.separator)
+        
+    with open(python_file, 'w') as f:
+        f.write(code)
+    if verbose:
+        print('### Start of the code ###')
+        print(code)
+        print('### End of the code ###')
+    
+    print('\n"{}" has the generated Python code to load the files.\n'.format(python_file))
+    return
+
+def pandas_profile_files(df, output_path = '.', only_small_files = False):
+    """
+    This function receives the dataframe created in the reckon phase and will create a pandas-profiling report per file.
+    """
+    df.sort_values(by = 'size', inplace = True)
+    if only_small_files:
+        df = df[df['size'] < 10_000]
+    print('Profiling files and generating reports in folder "{}"'.format(output_path))
+    for i, r in tqdm(df.iterrows(), total = len(df)):
+        profile_file(r.path, r['name'], extension = r.extension, output_path = output_path, sep = r.separator)
+    
+    print('\nCheck out all the reports in "{}"\n'.format(output_path))
+    return

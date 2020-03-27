@@ -27,7 +27,7 @@ Read the [documentation](docs/documentation.md) to know how to use it.
 
 You need to import the [auto_fe.py](code/auto_fe.py) file and call it as follows.
 
-```
+```python
 import auto_fe as afe
 
 df_files = afe.reckon_phase('<YOUR_FILE_PATH>')
@@ -35,7 +35,7 @@ df_files = afe.reckon_phase('<YOUR_FILE_PATH>')
 
 Checkout the [example.py](code/example.py) file and then run it from a terminal with python.
 
-```
+```python
 python example.py
 ```
 
@@ -43,9 +43,25 @@ The `reckon_phase` function will generate an Excel file with the results of the 
 
 ## Phase 2
 
-To be implemented soon.
+### Generate code to load files
 
-<!--It will use pandas-profiling to profile each file selected and loaded in memory and leave a report in an output folder.-->
+Using the dataframe `df_files` generated in the reckon phase, the function `generate_python_code()` will generate python code to load the files using `pandas`.
+
+```python
+afe.generate_python_code(df_files)
+```
+
+By default the code is printed to the standard output but also written by default to the `code.txt` file.
+
+### Profile the files
+
+Using the dataframe `df_files` generated in the reckon phase, the function `pandas_profile_files(df_files)` will load the files and run a [pandas-profiling](https://github.com/pandas-profiling/pandas-profiling) report.
+
+```python
+afe.pandas_profile_files(df_files)
+```
+
+By default, it will process the files by size order starting with the smallest file. It will create the reports and export them in HTML format. It will store the reports in the same directory where the code is running or it save them in a given directory with the `output_path  = '<YOUR_OUTPUT_PATH>'` argument.
 
 ## Phase 3
 
