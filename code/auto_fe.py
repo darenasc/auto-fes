@@ -274,14 +274,14 @@ def generate_code(file_path, file_name, extension, output_path = '.', sep = None
     df_name = file_name.split('.')[0].replace(' ', '_').replace('-', '_')
     if extension in PLAIN_FORMATS:
         separator = get_separator_char(sep)
-        code = """{}{} = pd.read_csv('{}', sep = '{}')\n""".format(prefix, df_name, file_path, separator)
+        code = """{}{} = pd.read_csv('{}', sep = '{}')\n\n""".format(prefix, df_name, file_path, separator)
         return code
     elif extension == 'xlsx':
         excel_name = get_file_basename(file_path).split('.')[0]
         excel_name += '_' + file_name
         code = ''''''
         excel_name = excel_name.replace(' ', '_').replace('-', '_')
-        code = """{}{} = pd.read_excel('{}', sheet_name = '{}')\n""".format(prefix, excel_name, file_path, file_name)
+        code = """{}{} = pd.read_excel('{}', sheet_name = '{}')\n\n""".format(prefix, excel_name, file_path, file_name)
         return code
     else:
         return ""
@@ -295,7 +295,8 @@ def generate_python_code(df, verbose = True, python_file = 'code.txt'):
     print('Generating python code and saving it to "{}"'.format(python_file))
     code = '''import pandas as pd\n\n'''
     for i, r in tqdm(df.iterrows(), total = len(df)):
-        code += generate_code(r.path, r['name'], r.extension, sep = r.separator)
+        if r.lines > 0:
+            code += generate_code(r.path, r['name'], r.extension, sep = r.separator)
         
     with open(python_file, 'w') as f:
         f.write(code)
@@ -316,7 +317,8 @@ def pandas_profile_files(df, output_path = '.', only_small_files = False):
         df = df[df['size'] < 10_000]
     print('Profiling files and generating reports in folder "{}"'.format(output_path))
     for i, r in tqdm(df.iterrows(), total = len(df)):
-        profile_file(r.path, r['name'], extension = r.extension, output_path = output_path, sep = r.separator)
+        if r.lines > 0:
+            profile_file(r.path, r['name'], extension = r.extension, output_path = output_path, sep = r.separator)
     
     print('\nCheck out all the reports in "{}"\n'.format(output_path))
     return
