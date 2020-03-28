@@ -240,7 +240,7 @@ def profile_file(file_path, file_name, extension, output_path = '.', sep = None)
             profile.to_file(report_name)
             return 
         elif extension == 'xlsx':
-            excel_name = get_file_basename(file_path).split('.')[0]
+            excel_name = get_file_basename(file_path)
             excel_name += '_' + file_name
             df = pd.read_excel(file_path, sheet_name=file_name)
             profile = ProfileReport(df)
