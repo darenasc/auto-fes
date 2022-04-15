@@ -1,5 +1,5 @@
 pandas==0.25.0
 pandas-profiling==2.3.0
 tqdm==4.32.1
-numpy==1.16.4
+numpy==1.21.0
 openpyxl==3.0.3
