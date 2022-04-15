@@ -1,63 +1,18 @@
 import os
 import os.path
-from os import listdir
-from os.path import isdir, isfile, join
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from pandas_profiling import ProfileReport
+from tqdm.auto import tqdm
 
-# from tqdm import tqdm
-from tqdm.autonotebook import tqdm
-
-SUPPORTED_FORMATS = ("txt", "csv", "tab", "dat", "json", "arff", "xml", "xlsx")
-PLAIN_FORMATS = ("txt", "csv", "tab", "dat")
+SUPPORTED_FORMATS = (".txt", ".csv", ".tab", ".dat", ".json", ".arff", ".xml", ".xlsx")
+PLAIN_FORMATS = (".txt", ".csv", ".tab", ".dat")
 SIZE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"]
 SEPARATORS = ["\t", " ", ",", ";", "|"]
 SEPARATOR_NAMES = ["tab", "space", "comma", "semi_colon", "pipe"]
-
-
-def get_files_and_dirs(path):
-    """
-    Gets all the files and directories (and subdirectories) from a given path.
-    """
-    if path[-1] == "/":
-        path = path[:-1]
-    elif path[-1] == "\\":
-        path = path[:-1]
-
-    content = os.listdir(path)
-
-    files = []
-    directories = []
-
-    for item in content:
-        target_item = path + "/" + item
-        if os.path.isfile(target_item):
-            files.append(target_item)
-        elif os.path.isdir(target_item):
-            directories.append(target_item)
-        else:
-            pass
-    return files, directories
-
-
-def explore_recursevely(path):
-    """
-    It returns all the files in a given folder and subfolders.
-    """
-    files = []
-    directories = []
-
-    files, directories = get_files_and_dirs(path)
-
-    if len(directories) == 0:
-        return files
-    else:
-        for folder in directories:
-            files_ = explore_recursevely(folder)
-            files += files_
-    return files
+BIG_FILE = 104_857_600  # 100MB
 
 
 def get_file_basename(file):
@@ -65,27 +20,9 @@ def get_file_basename(file):
     return os.path.basename(file)
 
 
-def get_file_extension(file):
-    """Returns the extension of a file give the file name and path."""
-    return os.path.basename(file).split(".")[-1]
-
-
-def get_file_size(file):
-    """Returns the size of a file in bytes given the file name and path."""
-    return os.stat(file).st_size
-
-
 def get_lines_count(file):
     """Returns the number of lines in a file."""
     return sum(1 for line in open(file))
-
-
-def filter_supported_formats(file_list):
-    filtered_list = []
-    for f in file_list:
-        if file_extension.lower() in SUPPORTED_FORMATS:
-            filtered_list.append(f)
-    return filtered_list
 
 
 def get_human_readable_size(size, index=0):
@@ -166,16 +103,16 @@ def get_separator(file_path, header=True):
     return sep
 
 
-def export_reckon_report(df, extension="xlsx"):
+def export_reckon_report(df, extension=".xlsx"):
     """
     This function exports the results of the reckon phase to an excel file.
     """
-    if extension == "xlsx":
+    if extension == ".xlsx":
         file_name = "files_explored.xlsx"
-        df.to_excel(file_name, sheet_name="files")
-    elif extension == "csv":
+        df.to_excel(file_name, sheet_name="files", index=False)
+    elif extension == ".csv":
         file_name = "files_explored.csv"
-        df.to_csv(file_name)
+        df.to_csv(file_name, index=False)
 
     pwd = os.getcwd()
     print(
@@ -186,25 +123,34 @@ def export_reckon_report(df, extension="xlsx"):
     return
 
 
-def reckon_phase(target_folder=".", export_results=True):
+def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame:
     """
     In phase 1 the script collects all potential files to explore from a folder, it
     will look recursevely all the subfolders in that path.
 
     It returns a pd.DataFrame with metadata around the files in the target_folder and subfolders.
+
+    Args:
+        target_folder: The folder where the script will look for files to explore.
+        export_results (bool): If True, the results of the reckon phase will be exported to an excel file.
+
+    Returns:
+        df (pd.DataFrame): A pd.DataFrame with metadata about the files in the target_folder and subfolders.
     """
+    # TODO - Compute number of columnss
+    target_folder = Path(target_folder)
     # Gets all the files recursevely in the target_folder path.
-    all_files = explore_recursevely(target_folder)
+    all_files = target_folder.rglob("*")
 
     # Creates a list to store temporal results about the files with its path, name,
     # extension, size, human readable size, and number of lines in the file.
     files = []
     columns = ["path", "name", "extension", "size", "human_readable", "lines"]
-    print("Processing files...")
-    for i, f in tqdm(enumerate(all_files), total=len(all_files)):
-        file_name = get_file_basename(f)
-        file_extension = get_file_extension(f)
-        file_size = get_file_size(f)
+    print(f"Processing files in {target_folder}")
+    for i, f in tqdm(enumerate(list(all_files)), total=len(list(all_files))):
+        file_name = f.stem
+        file_extension = f.suffix
+        file_size = f.stat().st_size
         hr_size = get_human_readable_size(file_size)
 
         if file_extension.lower() in SUPPORTED_FORMATS:
@@ -241,7 +187,9 @@ def reckon_phase(target_folder=".", export_results=True):
     # Creates and determine the separator in the plain file.
     print("Processing extensions...")
     df["separator"] = None
-    for i in tqdm(range(len(df)), total=len(df)):
+    pbar = tqdm(range(len(df)), total=len(df))
+    for i in pbar:
+        pbar.set_description(f"{df.iloc[i]['name']} ({df.iloc[i]['lines']:,} records)")
         if df.iloc[i]["extension"] in PLAIN_FORMATS:
             sep = get_separator(df.iloc[i]["path"])
             df.at[i, "separator"] = sep
@@ -255,7 +203,7 @@ def reckon_phase(target_folder=".", export_results=True):
 # PHASE 2
 
 
-def get_separator_char(sep):
+def get_separator_char(sep: str) -> str:
     """
     Returns the char used as separator.
     """
@@ -265,30 +213,50 @@ def get_separator_char(sep):
     return ","
 
 
-def profile_file(file_path, file_name, extension, output_path=".", sep=None):
+def profile_file(file_path, file_name, extension, file_size, output_path, sep=None):
     """
     This function will load the given file using pandas and then will create a report using pandas-profiling.
+
+    Args:
+        file_path: The path of the file to be profiled.
+        file_name: The name of the file to be profiled.
+        extension: The extension of the file to be profiled.
+        output_path: The path where the report will be saved.
+        sep: The separator used in the file.
+
+    Returns:
+        A pandas-profiling report.
     """
+
+    def get_profile(df, file_size):
+        if file_size > BIG_FILE:
+            profile = ProfileReport(df, minimal=True)
+        else:
+            profile = ProfileReport(df)
+        return profile
+
+    # output_path.mkdir(exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
     try:
         if extension in PLAIN_FORMATS:
             separator = get_separator_char(sep)
             df = pd.read_csv(file_path, sep=separator)
-            profile = ProfileReport(df)
-            file_name = file_name.split(".")[0]
-            report_name = "{}.html".format(file_name)
-            profile.to_file(report_name)
+            profile = get_profile(df, file_size)
+            report_path = output_path / "{}.html".format(file_name)
+            profile.to_file(report_path)
             return
-        elif extension == "xlsx":
+        elif extension == [".xlsx", ".xls"]:
             excel_name = get_file_basename(file_path)
             excel_name += "_" + file_name
             df = pd.read_excel(file_path, sheet_name=file_name)
-            profile = ProfileReport(df)
-            report_name = "{}.html".format(excel_name)
-            profile.to_file(report_name)
+            profile = get_profile(df, file_size)
+            report_path = output_path / "{}.html".format(excel_name)
+            profile.to_file(report_path)
         else:
             return
-    except:
-        print("Can't open {}".format(file_path))
+    except Exception as e:
+        print(e)
+        print(f"Error with {file_path}")
         return
 
 
@@ -317,8 +285,8 @@ def generate_code(
     df_name = file_name.split(".")[0].replace(" ", "_").replace("-", "_")
     if extension in PLAIN_FORMATS:
         separator = get_separator_char(sep)
-        code = """{}{} = pd.read_csv('{}', sep = '{}')\n\n""".format(
-            prefix, df_name, file_path, separator
+        code = (
+            f"""{prefix}{df_name} = pd.read_csv('{file_path}', sep = '{separator}')\n"""
         )
         return code
     elif extension == "xlsx":
@@ -326,9 +294,7 @@ def generate_code(
         excel_name += "_" + file_name
         code = """"""
         excel_name = excel_name.replace(" ", "_").replace("-", "_")
-        code = """{}{} = pd.read_excel('{}', sheet_name = '{}')\n\n""".format(
-            prefix, excel_name, file_path, file_name
-        )
+        code = f"""{prefix}{excel_name} = pd.read_excel('{file_path}', sheet_name = '{file_name}')\n"""
         return code
     else:
         return ""
@@ -359,22 +325,36 @@ def generate_python_code(df, verbose=True, python_file="code.txt"):
     return
 
 
-def pandas_profile_files(df, output_path=".", only_small_files=False):
+def pandas_profile_files(
+    df: pd.DataFrame, output_path: str = ".", only_small_files=False
+):
     """
     This function receives the dataframe created in the reckon phase and will create a pandas-profiling report per file.
+
+    Args:
+        df: The dataframe created in the reckon phase.
+        output_path: The path where the report will be saved.
+        only_small_files: If True, only the files with less than BIG_FILE will be profiled.
+
+    Returns:
+        A pandas-profiling report.
     """
+    output_path = Path(output_path)
     df.sort_values(by="size", inplace=True)
-    if only_small_files:
-        df = df[df["size"] < 10_000]
-    print('Profiling files and generating reports in folder "{}"'.format(output_path))
-    for i, r in tqdm(df.iterrows(), total=len(df)):
+    # if only_small_files:
+    #     df = df[df["size"] < 10_000]
+    print(f"Profiling files and generating reports in folder {output_path}")
+    pbar = tqdm(df.iterrows(), total=len(df))
+    for i, r in pbar:
+        pbar.set_description(f"Profiling {r['name']} ({r['lines']:,} records)")
         if r.lines > 0:
             profile_file(
-                r.path,
+                r["path"],
                 r["name"],
-                extension=r.extension,
+                extension=r["extension"],
+                file_size=r["size"],
                 output_path=output_path,
-                sep=r.separator,
+                sep=r["separator"],
             )
 
     print('\nCheck out all the reports in "{}"\n'.format(output_path))

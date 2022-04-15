@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 code/files_explored.xlsx
+code/code.txt
+code/output

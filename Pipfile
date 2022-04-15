@@ -4,11 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pandas = "*"
-pandas-profiling = "*"
 tqdm = "*"
 numpy = "*"
 openpyxl = "*"
+ipykernel = "*"
+pandas = "==1.3.5"
 
 [dev-packages]
 isort = "*"
@@ -18,6 +18,9 @@ python_version = "3.8"
 
 [pipenv]
 allow_prereleases = true
+
+[packages.pandas-profiling]
+extras = [ "notebook",]
 
 [dev-packages.black]
 extras = [ "jupyter",]
