@@ -1,9 +1,11 @@
 import os
 import os.path
+from configparser import ConfigParser
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import psycopg2
 from pandas_profiling import ProfileReport
 from tqdm.auto import tqdm
 
@@ -260,9 +262,7 @@ def profile_file(file_path, file_name, extension, file_size, output_path, sep=No
         return
 
 
-def generate_code(
-    file_path, file_name, extension, output_path=".", sep=None, prefix="df_"
-):
+def generate_code(file_path, file_name, extension, sep=None, prefix="df_"):
     """
     This function returns generated python code to load the files to memory using pandas.
     """
@@ -359,3 +359,181 @@ def pandas_profile_files(
 
     print('\nCheck out all the reports in "{}"\n'.format(output_path))
     return
+
+
+# PHASE 3: Loading the files to a database
+
+DATA_TYPE_CONVERSION = {
+    "postgres": {
+        "int64": "INTEGER",
+        "float64": "DOUYBLE PRECISION",
+        "object": "VARCHAR({})",
+        "bool": "BOOLEAN",
+        "datetime64[ns]": "TIMESTAMP",
+        "datetime64[ns, UTC]": "TIMESTAMP",
+        "datetime64[ns, CET]": "TIMESTAMP",
+        "datetime64[ns, CEST]": "TIMESTAMP",
+    },
+    "sqlite": {
+        "int64": "INTEGER",
+        "float64": "REAL",
+        "object": "TEXT",
+        "bool": "BOOLEAN",
+        "datetime64[ns]": "TIMESTAMP",
+        "datetime64[ns, UTC]": "TIMESTAMP",
+        "datetime64[ns, CET]": "TIMESTAMP",
+        "datetime64[ns, CEST]": "TIMESTAMP",
+    },
+}
+
+
+def get_database_config(section: str, databases="./databases.ini") -> dict:
+    config_parser = ConfigParser()
+    config_parser.read(databases)
+    assert (
+        "db_engine" in config_parser[section]
+    ), "db_engine not found in section [{}]".format(section)
+    assert "host" in config_parser[section], "host not found in section [{}]".format(
+        section
+    )
+    assert "user" in config_parser[section], "user not found in section [{}]".format(
+        section
+    )
+    assert (
+        "password" in config_parser[section]
+    ), "password not found in section [{}]".format(section)
+    assert (
+        "catalog" in config_parser[section]
+    ), "catalog not found in section [{}]".format(section)
+    assert (
+        "schema" in config_parser[section]
+    ), "schema not found in section [{}]".format(section)
+    assert "port" in config_parser[section], "port not found in section [{}]".format(
+        section
+    )
+    config_dict = {}
+    if section not in config_parser.sections():
+        raise Exception("Section not found in databases.ini")
+    for key in config_parser[section]:
+        config_dict[key] = config_parser[section][key]
+    return config_dict
+
+
+def get_db_connection(db_config: dict):
+    conn = None
+    if db_config["db_engine"] == "postgres":
+        conn = psycopg2.connect(
+            host=db_config["host"],
+            user=db_config["user"],
+            password=db_config["password"],
+            database=db_config["catalog"],
+            port=db_config["port"],
+        )
+        return conn
+    else:
+        print(f"{db_config['db_engine']} database engine not supported")
+        return None
+
+
+def get_data_type(db_engine: str, df: pd.DataFrame, column: str):
+    """Returns the data type of a column in a dataframe
+
+    Args:
+        db_engine (str): The database engine
+        df (pd.DataFrame): The dataframe
+        column (str): The column name
+
+    Returns:
+        str: The data type of the column
+    """
+    assert db_engine in DATA_TYPE_CONVERSION, f"{db_engine} not supported"
+    assert column in df.columns, f"{column} not found in dataframe"
+    assert (
+        str(df[column].dtype) in DATA_TYPE_CONVERSION[db_engine]
+    ), f"{df[column].dtype} not supported"
+    
+    data_type = DATA_TYPE_CONVERSION[db_engine][str(df[column].dtype)]
+    if "VARCHAR" in data_type:
+        # data_type = data_type.format(len(df[column].max()) + 1)
+        data_type = data_type.format(df[column].str.len().max() + 1)
+    return data_type
+
+
+def generate_table_creation_query(db_config: dict, df: pd.DataFrame, table_name: str):
+    """
+    Generates a query to create a table in a database
+
+    Args:
+        db_config (dict): The database configuration
+        df (pd.DataFrame): The dataframe
+        table_name (str): The table name
+
+    Returns:
+        sql (str): The query to create the table
+    """
+    sql = f"""CREATE TABLE IF NOT EXISTS {db_config['schema']}.{table_name} (\n"""
+    # sql = f"""CREATE TABLE {db_config['schema']}.{table_name} (\n"""
+    for i, r in enumerate(df.dtypes.items()):
+        column, data_type = r
+        data_type_sql = get_data_type(db_config['db_engine'], df, column)
+        if i == len(df.dtypes) - 1:
+            sql += f"{column} {data_type_sql}\n"
+        else:
+            sql += f"{column} {data_type_sql},\n"
+    sql += """);"""
+    return sql
+
+
+def create_table(db_config: dict, df: pd.DataFrame, table_name: str, section: str):
+    """
+    Creates a table in a database
+
+    Args:
+        db_config (dict): The database configuration
+        df (pd.DataFrame): The dataframe
+        table_name (str): The table name
+        section (str): The section in the databases.ini file
+
+    Returns:
+        None
+    """
+    db_config = get_database_config(section)
+    conn = get_db_connection(db_config)
+    sql = generate_table_creation_query(db_config, df, table_name)
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def generate_insert_query(db_config: dict, df: pd.DataFrame, table_name: str):
+    sql = f"""INSERT INTO {db_config['schema']}.{table_name} \n("""
+    for i, r in enumerate(df.dtypes.items()):
+        column, data_type = r
+        if i == len(df.dtypes) - 1:
+            sql += f"{column}"
+        else:
+            sql += f"{column}, "
+    sql += """) VALUES \n("""
+
+    for i, r in enumerate(df.dtypes.items()):
+        column, data_type = r
+        if i == len(df.dtypes) - 1:
+            sql += f"%s"
+        else:
+            sql += f"%s, "
+    sql += """)"""
+    return sql
+
+
+def insert_data(db_config: dict, df: pd.DataFrame, table_name: str, section: str):
+    db_config = get_database_config(section)
+    sql = generate_insert_query(db_config, df, table_name)
+    data = [tuple(x) for x in df.values.tolist()]
+    conn = get_db_connection(db_config)
+    cursor = conn.cursor()
+    cursor.executemany(sql, data)
+    conn.commit()
+    cursor.close()
+    conn.close()
