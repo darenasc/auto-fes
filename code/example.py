@@ -6,3 +6,5 @@ df = afe.reckon_phase(target_folder)
 afe.generate_python_code(df)
 
 afe.pandas_profile_files(df)
+
+# afe.load_datasets_to_database(df, section="<YOUR_DATABASE_NAME>")

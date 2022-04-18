@@ -451,7 +451,7 @@ def get_data_type(db_engine: str, df: pd.DataFrame, column: str):
     assert (
         str(df[column].dtype) in DATA_TYPE_CONVERSION[db_engine]
     ), f"{df[column].dtype} not supported"
-    
+
     data_type = DATA_TYPE_CONVERSION[db_engine][str(df[column].dtype)]
     if "VARCHAR" in data_type:
         # data_type = data_type.format(len(df[column].max()) + 1)
@@ -475,7 +475,7 @@ def generate_table_creation_query(db_config: dict, df: pd.DataFrame, table_name:
     # sql = f"""CREATE TABLE {db_config['schema']}.{table_name} (\n"""
     for i, r in enumerate(df.dtypes.items()):
         column, data_type = r
-        data_type_sql = get_data_type(db_config['db_engine'], df, column)
+        data_type_sql = get_data_type(db_config["db_engine"], df, column)
         if i == len(df.dtypes) - 1:
             sql += f"{column} {data_type_sql}\n"
         else:
@@ -537,3 +537,23 @@ def insert_data(db_config: dict, df: pd.DataFrame, table_name: str, section: str
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def load_datasets_to_database(df: pd.DataFrames, section: str):
+    db_config = get_database_config(section)
+    pbar = tqdm(df.iterrows(), total=len(df))
+    for i, r in pbar:
+        pbar.set_description(f"{r['name']}")
+        df_aux = pd.read_csv(r["path"], sep=";")
+        create_table(
+            db_config,
+            df_aux,
+            r["name"].split(".")[0].replace(" ", "_").replace("-", "_"),
+            section,
+        )
+        insert_data(
+            db_config,
+            df_aux,
+            r["name"].split(".")[0].replace(" ", "_").replace("-", "_"),
+            section,
+        )

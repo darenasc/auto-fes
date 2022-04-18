@@ -1,0 +1,8 @@
+[<section_name>]
+db_engine = postgres
+host = <IP_OR_HOSTNAME>
+schema = <DATABASE_SCHEMA>
+catalog = <DATABASE_CATALOG>
+user = <DATABASE_USER>
+password = <DATABASE_PASSWORD>
+port = <DATABASE_PORT>
