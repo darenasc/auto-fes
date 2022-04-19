@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import psycopg2
 from pandas_profiling import ProfileReport
+from psycopg2.extras import execute_batch
 from tqdm.auto import tqdm
 
 SUPPORTED_FORMATS = (".txt", ".csv", ".tab", ".dat", ".json", ".arff", ".xml", ".xlsx")
@@ -139,7 +140,7 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
     Returns:
         df (pd.DataFrame): A pd.DataFrame with metadata about the files in the target_folder and subfolders.
     """
-    # TODO - Compute number of columnss
+    # TODO - Compute number of columns
     target_folder = Path(target_folder)
     # Gets all the files recursevely in the target_folder path.
     all_files = target_folder.rglob("*")
@@ -161,7 +162,7 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
                 files.append(
                     (f, file_name, file_extension, file_size, hr_size, lines_count)
                 )
-            elif file_extension == "xlsx":
+            elif file_extension == ".xlsx":
                 excel_file = pd.ExcelFile(f)
                 for sheet_name in excel_file.sheet_names:
                     df_sheet = pd.read_excel(f, sheet_name=sheet_name)
@@ -221,9 +222,13 @@ def profile_file(file_path, file_name, extension, file_size, output_path, sep=No
 
     Args:
         file_path: The path of the file to be profiled.
+
         file_name: The name of the file to be profiled.
+
         extension: The extension of the file to be profiled.
+
         output_path: The path where the report will be saved.
+
         sep: The separator used in the file.
 
     Returns:
@@ -332,9 +337,11 @@ def pandas_profile_files(
     This function receives the dataframe created in the reckon phase and will create a pandas-profiling report per file.
 
     Args:
-        df: The dataframe created in the reckon phase.
-        output_path: The path where the report will be saved.
-        only_small_files: If True, only the files with less than BIG_FILE will be profiled.
+        df (pd.DataFrame): The dataframe created in the reckon phase.
+
+        output_path (str): The path where the report will be saved.
+
+        only_small_files (bool): If True, only the files with less than BIG_FILE will be profiled.
 
     Returns:
         A pandas-profiling report.
@@ -365,8 +372,9 @@ def pandas_profile_files(
 
 DATA_TYPE_CONVERSION = {
     "postgres": {
-        "int64": "INTEGER",
-        "float64": "DOUYBLE PRECISION",
+        # "int64": "INTEGER",
+        "int64": "BIGINT",
+        "float64": "DOUBLE PRECISION",
         "object": "VARCHAR({})",
         "bool": "BOOLEAN",
         "datetime64[ns]": "TIMESTAMP",
@@ -439,9 +447,11 @@ def get_data_type(db_engine: str, df: pd.DataFrame, column: str):
     """Returns the data type of a column in a dataframe
 
     Args:
-        db_engine (str): The database engine
-        df (pd.DataFrame): The dataframe
-        column (str): The column name
+        db_engine (str): The database engine to use.
+
+        df (pd.DataFrame): The dataframe with files.
+
+        column (str): The column name.
 
     Returns:
         str: The data type of the column
@@ -454,8 +464,7 @@ def get_data_type(db_engine: str, df: pd.DataFrame, column: str):
 
     data_type = DATA_TYPE_CONVERSION[db_engine][str(df[column].dtype)]
     if "VARCHAR" in data_type:
-        # data_type = data_type.format(len(df[column].max()) + 1)
-        data_type = data_type.format(df[column].str.len().max() + 1)
+        data_type = data_type.format(str(int(df[column].str.len().max() + 1)))
     return data_type
 
 
@@ -464,14 +473,19 @@ def generate_table_creation_query(db_config: dict, df: pd.DataFrame, table_name:
     Generates a query to create a table in a database
 
     Args:
-        db_config (dict): The database configuration
-        df (pd.DataFrame): The dataframe
-        table_name (str): The table name
+        db_config (dict): The database configuration dictionary.
+
+        df (pd.DataFrame): The dataframe to be loaded into the database.
+
+        table_name (str): The table name.
 
     Returns:
         sql (str): The query to create the table
     """
-    sql = f"""CREATE TABLE IF NOT EXISTS {db_config['schema']}.{table_name} (\n"""
+    # TODO - Accept schema with data types to create the tables.
+    # TODO - Save the SQL code to a file.
+    sql = f"""DROP TABLE IF EXISTS {db_config['schema']}.{table_name};
+            \nCREATE TABLE IF NOT EXISTS {db_config['schema']}.{table_name} (\n"""
     # sql = f"""CREATE TABLE {db_config['schema']}.{table_name} (\n"""
     for i, r in enumerate(df.dtypes.items()):
         column, data_type = r
@@ -489,9 +503,12 @@ def create_table(db_config: dict, df: pd.DataFrame, table_name: str, section: st
     Creates a table in a database
 
     Args:
-        db_config (dict): The database configuration
-        df (pd.DataFrame): The dataframe
-        table_name (str): The table name
+        db_config (dict): The database configuration dictionary.
+
+        df (pd.DataFrame): The dataframe to be loaded into the database.
+
+        table_name (str): The table name.
+
         section (str): The section in the databases.ini file
 
     Returns:
@@ -528,32 +545,58 @@ def generate_insert_query(db_config: dict, df: pd.DataFrame, table_name: str):
 
 
 def insert_data(db_config: dict, df: pd.DataFrame, table_name: str, section: str):
+    """Inserts data into a table in a database.
+
+    Args:
+        db_config (dict): The database configuration.
+
+        df (pd.DataFrame): The dataframe with the data to be inserted.
+
+        table_name (str): The table name.
+
+        section (str): The section in the databases.ini file.
+
+    Returns:
+        None
+    """
     db_config = get_database_config(section)
     sql = generate_insert_query(db_config, df, table_name)
     data = [tuple(x) for x in df.values.tolist()]
     conn = get_db_connection(db_config)
     cursor = conn.cursor()
-    cursor.executemany(sql, data)
+    execute_batch(cursor, sql, data, page_size=1_000_000)
+    # cursor.executemany(sql, data)
     conn.commit()
     cursor.close()
     conn.close()
 
 
-def load_datasets_to_database(df: pd.DataFrames, section: str):
+def load_datasets_to_database(df: pd.DataFrame, section: str):
+    """Loads a dataframe to a database.
+
+    Args:
+        df (pd.DataFrame): The dataframe with a list of files to load.
+
+        section (str): The section in the databases.ini file
+
+    Returns:
+        None
+    """
+    df = df.sort_values(by=["lines"]).replace({np.nan: None})
+
     db_config = get_database_config(section)
+
     pbar = tqdm(df.iterrows(), total=len(df))
     for i, r in pbar:
-        pbar.set_description(f"{r['name']}")
+        pbar.set_description(f"""{r["name"]} ({r["lines"]:,} records)""")
         df_aux = pd.read_csv(r["path"], sep=";")
-        create_table(
-            db_config,
-            df_aux,
-            r["name"].split(".")[0].replace(" ", "_").replace("-", "_"),
-            section,
+        df_aux = df_aux.replace({np.nan: None})
+        table_name = (
+            r["name"]
+            .replace(" ", "_")
+            .replace("-", "_")
+            .replace("(", "")
+            .replace(")", "")
         )
-        insert_data(
-            db_config,
-            df_aux,
-            r["name"].split(".")[0].replace(" ", "_").replace("-", "_"),
-            section,
-        )
+        create_table(db_config, df_aux, table_name, section)
+        insert_data(db_config, df_aux, table_name, section)
