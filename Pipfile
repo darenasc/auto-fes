@@ -7,23 +7,21 @@ name = "pypi"
 tqdm = "*"
 numpy = "*"
 openpyxl = "*"
-ipykernel = "*"
 pandas = "==1.3.5"
 SQLAlchemy = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
+pipfile = "*"
+ydata-profiling = "*"
 
 [dev-packages]
 isort = "*"
+black = {extras = [ "jupyter",]}
+ipykernel = "*"
+pipfile = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.10"
 
 [pipenv]
 allow_prereleases = true
-
-[packages.pandas-profiling]
-extras = [ "notebook",]
-
-[dev-packages.black]
-extras = [ "jupyter",]
