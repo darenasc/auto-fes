@@ -6,7 +6,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import psycopg2
-from pandas_profiling import ProfileReport
+
+# from pandas_profiling import ProfileReport
+from ydata_profiling import ProfileReport
 from psycopg2.extras import execute_batch
 from tqdm.auto import tqdm
 
@@ -23,8 +25,9 @@ def get_file_basename(file):
     return os.path.basename(file)
 
 
-def get_lines_count(file):
-    """Returns the number of lines in a file."""
+def get_row_count(file):
+    """Returns the number of rows in a file."""
+    # TODO - Add closing file
     return sum(1 for line in open(file))
 
 
@@ -126,7 +129,9 @@ def export_reckon_report(df, extension=".xlsx"):
     return
 
 
-def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame:
+def reckon_phase(
+    target_folder: str | Path = ".", export_results: bool = True
+) -> pd.DataFrame:
     """
     In phase 1 the script collects all potential files to explore from a folder, it
     will look recursevely all the subfolders in that path.
@@ -146,9 +151,9 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
     all_files = target_folder.rglob("*")
 
     # Creates a list to store temporal results about the files with its path, name,
-    # extension, size, human readable size, and number of lines in the file.
+    # extension, size, human readable size, and number of rows in the file.
     files = []
-    columns = ["path", "name", "extension", "size", "human_readable", "lines"]
+    columns = ["path", "name", "extension", "size", "human_readable", "rows"]
     print(f"Processing files in {target_folder}")
     for i, f in tqdm(enumerate(list(all_files)), total=len(list(all_files))):
         file_name = f.stem
@@ -158,9 +163,9 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
 
         if file_extension.lower() in SUPPORTED_FORMATS:
             if file_extension in PLAIN_FORMATS:
-                lines_count = get_lines_count(f)
+                row_count = get_row_count(f)
                 files.append(
-                    (f, file_name, file_extension, file_size, hr_size, lines_count)
+                    (f, file_name, file_extension, file_size, hr_size, row_count)
                 )
             elif file_extension == ".xlsx":
                 excel_file = pd.ExcelFile(f)
@@ -177,9 +182,9 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
                         )
                     )
             else:
-                lines_count = None
+                row_count = None
                 files.append(
-                    (f, file_name, file_extension, file_size, hr_size, lines_count)
+                    (f, file_name, file_extension, file_size, hr_size, row_count)
                 )
         else:
             pass
@@ -192,7 +197,7 @@ def reckon_phase(target_folder=".", export_results: bool = True) -> pd.DataFrame
     df["separator"] = None
     pbar = tqdm(range(len(df)), total=len(df))
     for i in pbar:
-        pbar.set_description(f"{df.iloc[i]['name']} ({df.iloc[i]['lines']:,} records)")
+        pbar.set_description(f"{df.iloc[i]['name']} ({df.iloc[i]['rows']:,} records)")
         if df.iloc[i]["extension"] in PLAIN_FORMATS:
             sep = get_separator(df.iloc[i]["path"])
             df.at[i, "separator"] = sep
@@ -242,22 +247,21 @@ def profile_file(file_path, file_name, extension, file_size, output_path, sep=No
             profile = ProfileReport(df)
         return profile
 
-    # output_path.mkdir(exist_ok=True)
     output_path.mkdir(parents=True, exist_ok=True)
     try:
         if extension in PLAIN_FORMATS:
             separator = get_separator_char(sep)
             df = pd.read_csv(file_path, sep=separator)
             profile = get_profile(df, file_size)
-            report_path = output_path / "{}.html".format(file_name)
+            report_path = output_path / f"{file_name}.html"
             profile.to_file(report_path)
             return
-        elif extension == [".xlsx", ".xls"]:
+        elif extension in [".xlsx", ".xls"]:
             excel_name = get_file_basename(file_path)
             excel_name += "_" + file_name
             df = pd.read_excel(file_path, sheet_name=file_name)
             profile = get_profile(df, file_size)
-            report_path = output_path / "{}.html".format(excel_name)
+            report_path = output_path / f"{excel_name}.html"
             profile.to_file(report_path)
         else:
             return
@@ -267,7 +271,9 @@ def profile_file(file_path, file_name, extension, file_size, output_path, sep=No
         return
 
 
-def generate_code(file_path, file_name, extension, sep=None, prefix="df_"):
+def generate_code(
+    file_path: str, file_name: str, extension: str, sep=None, prefix="df_"
+):
     """
     This function returns generated python code to load the files to memory using pandas.
     """
@@ -287,18 +293,20 @@ def generate_code(file_path, file_name, extension, sep=None, prefix="df_"):
             separator = ","
         return separator
 
-    df_name = file_name.split(".")[0].replace(" ", "_").replace("-", "_")
+    df_name = (
+        file_name.split(".")[0].replace(" ", "_").replace("-", "_").replace(",", "_")
+    )
     if extension in PLAIN_FORMATS:
         separator = get_separator_char(sep)
         code = (
             f"""{prefix}{df_name} = pd.read_csv('{file_path}', sep = '{separator}')\n"""
         )
         return code
-    elif extension == "xlsx":
+    elif extension == ".xlsx":
         excel_name = get_file_basename(file_path).split(".")[0]
         excel_name += "_" + file_name
         code = """"""
-        excel_name = excel_name.replace(" ", "_").replace("-", "_")
+        excel_name = excel_name.replace(" ", "_").replace("-", "_").replace(",", "_")
         code = f"""{prefix}{excel_name} = pd.read_excel('{file_path}', sheet_name = '{file_name}')\n"""
         return code
     else:
@@ -311,10 +319,10 @@ def generate_python_code(df, verbose=True, python_file="code.txt"):
     It will write a 'code.txt' file with the scripts.
     The verbose option is to print the code to the standard output.
     """
-    print('Generating python code and saving it to "{}"'.format(python_file))
+    print(f'Generating python code and saving it to "{python_file}"')
     code = """import pandas as pd\n\n"""
     for i, r in tqdm(df.iterrows(), total=len(df)):
-        if r.lines > 0:
+        if r.rows > 0:
             code += generate_code(r.path, r["name"], r.extension, sep=r.separator)
 
     with open(python_file, "w") as f:
@@ -324,14 +332,12 @@ def generate_python_code(df, verbose=True, python_file="code.txt"):
         print(code)
         print("### End of the code ###")
 
-    print(
-        '\n"{}" has the generated Python code to load the files.\n'.format(python_file)
-    )
+    print('\n"{python_file}" has the generated Python code to load the files.\n')
     return
 
 
 def pandas_profile_files(
-    df: pd.DataFrame, output_path: str = ".", only_small_files=False
+    df: pd.DataFrame, output_path: str = ".", only_small_files: bool = False
 ):
     """
     This function receives the dataframe created in the reckon phase and will create a pandas-profiling report per file.
@@ -353,8 +359,8 @@ def pandas_profile_files(
     print(f"Profiling files and generating reports in folder {output_path}")
     pbar = tqdm(df.iterrows(), total=len(df))
     for i, r in pbar:
-        pbar.set_description(f"Profiling {r['name']} ({r['lines']:,} records)")
-        if r.lines > 0:
+        pbar.set_description(f"Profiling {r['name']} ({r['rows']:,} records)")
+        if r.rows > 0:
             profile_file(
                 r["path"],
                 r["name"],
@@ -364,7 +370,7 @@ def pandas_profile_files(
                 sep=r["separator"],
             )
 
-    print('\nCheck out all the reports in "{}"\n'.format(output_path))
+    print(f'\nCheck out all the reports in "{output_path}"\n')
     return
 
 
@@ -582,13 +588,13 @@ def load_datasets_to_database(df: pd.DataFrame, section: str):
     Returns:
         None
     """
-    df = df.sort_values(by=["lines"]).replace({np.nan: None})
+    df = df.sort_values(by=["rows"]).replace({np.nan: None})
 
     db_config = get_database_config(section)
 
     pbar = tqdm(df.iterrows(), total=len(df))
     for i, r in pbar:
-        pbar.set_description(f"""{r["name"]} ({r["lines"]:,} records)""")
+        pbar.set_description(f"""{r["name"]} ({r["rows"]:,} records)""")
         df_aux = pd.read_csv(r["path"], sep=";")
         df_aux = df_aux.replace({np.nan: None})
         table_name = (
