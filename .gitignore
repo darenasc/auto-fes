@@ -135,3 +135,5 @@ code/databases.ini
 Pipfile.lock
 data/
 notebooks/
+*.DS_Store
+output/*

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import psycopg2
 
-# from pandas_profiling import ProfileReport
 from ydata_profiling import ProfileReport
 from psycopg2.extras import execute_batch
 from tqdm.auto import tqdm
@@ -313,7 +312,9 @@ def generate_code(
         return ""
 
 
-def generate_python_code(df, verbose=True, python_file="code.txt"):
+def generate_python_code(
+    df: pd.DataFrame, verbose: bool = True, python_file: str = "code.txt"
+):
     """
     This functions receives the dataframe generated in the reckon phase and will generate python code to load each file.
     It will write a 'code.txt' file with the scripts.
@@ -332,12 +333,12 @@ def generate_python_code(df, verbose=True, python_file="code.txt"):
         print(code)
         print("### End of the code ###")
 
-    print('\n"{python_file}" has the generated Python code to load the files.\n')
+    print(f'\n"{python_file}" has the generated Python code to load the files.\n')
     return
 
 
 def pandas_profile_files(
-    df: pd.DataFrame, output_path: str = ".", only_small_files: bool = False
+    df: pd.DataFrame, output_path: str | Path = ".", only_small_files: bool = False
 ):
     """
     This function receives the dataframe created in the reckon phase and will create a pandas-profiling report per file.

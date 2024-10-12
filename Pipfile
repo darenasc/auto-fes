@@ -13,6 +13,7 @@ sqlalchemy = "*"
 psycopg2-binary = "*"
 pipfile = "*"
 ydata-profiling = "*"
+nbconvert = "*"
 
 [dev-packages]
 isort = "*"
