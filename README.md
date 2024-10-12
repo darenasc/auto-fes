@@ -28,7 +28,7 @@ Read the [documentation](docs/documentation.md) to know how to use it or check o
 You need to import the [auto_fe.py](code/auto_fe.py) file and call it as follows.
 
 ```python
-import auto_fe as afe
+from afes import afe
 
 df_files = afe.reckon_phase('<YOUR_FILE_PATH>')
 ```
