@@ -15,7 +15,7 @@ dependencies = [
   "tqdm",
   "numpy",
   "openpyxl",
-  "pandas==1.3.5",
+  "pandas",
   "sqlalchemy",
   "psycopg2-binary",
   "pipfile",

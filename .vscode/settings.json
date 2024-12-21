@@ -4,12 +4,19 @@
         "editor.formatOnSaveMode": "file",
         "editor.formatOnSave": true
     },
+    "isort.args":["--profile", "black"],
     "editor.formatOnSaveMode": "file",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
+      "source.organizeImports": "explicit"
     },
+    
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"
-    }
-}
+    },
+    "editor.rulers": [
+        80,
+        120
+    ]
+  }
+  
