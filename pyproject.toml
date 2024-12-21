@@ -6,20 +6,19 @@ build-backend = "setuptools.build_meta"
 name = "afes"
 dynamic = ["version"]
 authors = [
-  { name="Diego Arenas", email="darenasc@gmail.com" },
+  { name="Diego Arenas", email="darenasc@gmail.com" }
 ]
-description = "A package to explore data from plain files."
+maintainers = [
+  { name="Diego Arenas", email="darenasc@gmail.com" }
+]
+description = "Automated exploration of structured data files in a folder."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
   "tqdm",
   "numpy",
   "openpyxl",
   "pandas",
-  "sqlalchemy",
-  "psycopg2-binary",
-  "pipfile",
-  "ydata-profiling",
   "nbconvert",
 ]
 classifiers = [
@@ -27,7 +26,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
+[project.optional-dependencies]
+profiling = ["ydata-profiling"]
+database = [
+  "sqlalchemy",
+  "psycopg2-binary",
+]
 [project.urls]
 Homepage = "https://github.com/darenasc/auto-fes"
 Issues = "https://github.com/darenasc/auto-fes/issues"
@@ -123,5 +127,6 @@ disable = '''print-statement,
         missing-function-docstring,
         W,
         R0201,
-        print-statement
+        print-statement,
+        import-outside-toplevel,
 '''
