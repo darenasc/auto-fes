@@ -1,0 +1,127 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afes"
+dynamic = ["version"]
+authors = [
+  { name="Diego Arenas", email="darenasc@gmail.com" },
+]
+description = "A package to explore data from plain files."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "tqdm",
+  "numpy",
+  "openpyxl",
+  "pandas==1.3.5",
+  "sqlalchemy",
+  "psycopg2-binary",
+  "pipfile",
+  "ydata-profiling",
+  "nbconvert",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/darenasc/auto-fes"
+Issues = "https://github.com/darenasc/auto-fes/issues"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = '''print-statement,
+        parameter-unpacking,
+        unpacking-in-except,
+        old-raise-syntax,
+        backtick,
+        long-suffix,
+        old-ne-operator,
+        old-octal-literal,
+        import-star-module-level,
+        non-ascii-bytes-literal,
+        raw-checker-failed,
+        bad-inline-option,
+        locally-disabled,
+        file-ignored,
+        suppressed-message,
+        useless-suppression,
+        deprecated-pragma,
+        use-symbolic-message-instead,
+        apply-builtin,
+        basestring-builtin,
+        buffer-builtin,
+        cmp-builtin,
+        coerce-builtin,
+        execfile-builtin,
+        file-builtin,
+        long-builtin,
+        raw_input-builtin,
+        reduce-builtin,
+        standarderror-builtin,
+        unicode-builtin,
+        xrange-builtin,
+        coerce-method,
+        delslice-method,
+        getslice-method,
+        setslice-method,
+        no-absolute-import,
+        old-division,
+        dict-iter-method,
+        dict-view-method,
+        next-method-called,
+        metaclass-assignment,
+        indexing-exception,
+        raising-string,
+        reload-builtin,
+        oct-method,
+        hex-method,
+        nonzero-method,
+        cmp-method,
+        input-builtin,
+        round-builtin,
+        intern-builtin,
+        unichr-builtin,
+        map-builtin-not-iterating,
+        zip-builtin-not-iterating,
+        range-builtin-not-iterating,
+        filter-builtin-not-iterating,
+        using-cmp-argument,
+        eq-without-hash,
+        div-method,
+        idiv-method,
+        rdiv-method,
+        exception-message-attribute,
+        invalid-str-codec,
+        sys-max-int,
+        bad-python3-import,
+        deprecated-string-function,
+        deprecated-str-translate-call,
+        deprecated-itertools-function,
+        deprecated-types-field,
+        next-method-defined,
+        dict-items-not-iterating,
+        dict-keys-not-iterating,
+        dict-values-not-iterating,
+        deprecated-operator-function,
+        deprecated-urllib-function,
+        xreadlines-attribute,
+        deprecated-sys-function,
+        exception-escape,
+        comprehension-escape,
+        missing-module-docstring,
+        missing-class-docstring,
+        missing-function-docstring,
+        W,
+        R0201,
+        print-statement
+'''
