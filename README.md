@@ -11,7 +11,8 @@ If you have a bunch of sctructured data in plain files, this library is for you.
 # Installation
 
 ```bash
-pip install git+https://github.com/darenasc/auto-fes.git
+pip install -q git+https://github.com/darenasc/auto-fes.git
+pip install -q ydata_profiling sweetviz # to make profiling tools work
 ```
 
 ## How to use it
