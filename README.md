@@ -48,8 +48,6 @@ flowchart LR
     Profile --> sweetviz@{ shape: doc }
 ```
 
-Read the [documentation](docs/documentation.md) to know how to use it or check out the [notebook-example](code/notebook-example.ipynb).
-
 ## Explore
 
 You need to import the [auto_fe.py](code/auto_fe.py) file and call it as follows.
@@ -67,13 +65,20 @@ df_files
 
 Checkout the [example.py](src/example.py) file and then run it from a terminal with python as the following code, or using a Jupyter [notebook](src/notebook-example.ipynb).
 
-## Generate pandas code
+## Generate code
 
 Using the dataframe `df_files` generated in the explore phase, you can generate working python pandas code to be used. 
 
 the function `generate()` will generate python code to load the files using `pandas`.
 
 ```python
+from afes import afe
+
+# Path to folder with files to be explored
+TARGET_FOLDER = "<PATH_TO_FILES_TO_EXPLORE>"
+OUTPUT_FOLDER = "<PATH_TO_OUTPUTS>"
+
+df_files = afe.explore(TARGET_FOLDER)
 afe.generate(df_files)
 ```
 
