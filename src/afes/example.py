@@ -1,10 +1,14 @@
-import src.afes.afe as afe
+from afes import afe
 
-target_folder = "<YOUR_PATH_WITH_YOUR_FILES_TO_EXPLORE>"
-df = afe.reckon_phase(target_folder)
+TARGET_FOLDER = "<PATH_TO_FILES_TO_EXPLORE>"
+OUTPUT_FOLDER = "<PATH_TO_OUTPUTS>"
 
-afe.generate_python_code(df)
+# Run exploration on the files
+df_files = afe.explore(TARGET_FOLDER)
 
-afe.pandas_profile_files(df)
+# Generate pandas code to load the files
+afe.generate(df_files)
 
-# afe.load_datasets_to_database(df, section="<YOUR_DATABASE_NAME>")
+# Run profiling on each file
+afe.profile(df_files, profile_tool="ydata-profiling", output_path=OUTPUT_FOLDER)
+afe.profile(df_files, profile_tool="sweetviz", output_path=OUTPUT_FOLDER)

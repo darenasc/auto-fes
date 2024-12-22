@@ -5,14 +5,16 @@ name = "pypi"
 
 [packages]
 tqdm = "*"
-numpy = "*"
 openpyxl = "*"
 pandas = "*"
 pipfile = "*"
 nbconvert = "*"
+typing-extensions = "*"
+numpy = "==1.26.4" # required by sweetviz
 
 [profiling-packages]
 ydata-profiling = "*"
+sweetviz = "*"
 
 [database-packages]
 sqlalchemy = "*"
@@ -25,6 +27,7 @@ ipykernel = "*"
 pipfile = "*"
 pytest = "*"
 pytest-cov = "*"
+typing-extensions = "*"
 
 [requires]
 python_version = "3.10"

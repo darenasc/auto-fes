@@ -16,7 +16,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "tqdm",
-  "numpy",
+  "numpy==1.26.4",
   "openpyxl",
   "pandas",
   "nbconvert",
@@ -27,7 +27,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 [project.optional-dependencies]
-profiling = ["ydata-profiling"]
+profiling = [
+  "ydata-profiling", 
+  "sweetviz"
+]
 database = [
   "sqlalchemy",
   "psycopg2-binary",
@@ -129,4 +132,5 @@ disable = '''print-statement,
         R0201,
         print-statement,
         import-outside-toplevel,
+        import-error,
 '''

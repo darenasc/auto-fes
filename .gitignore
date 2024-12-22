@@ -137,3 +137,5 @@ data/
 notebooks/
 *.DS_Store
 output/*
+*files_explored.xlsx
+*code.txt
