@@ -7,10 +7,17 @@ from afes.config import PLAIN_FORMATS
 
 
 def generate_code(
-    file_path: str, file_name: str, extension: str, sep=None, prefix="df_"
+    file_path: str, file_name: str, extension: str, sep: str | None = None, prefix="df_"
 ):
-    """
-    This function returns generated python code to load the files to memory using pandas.
+    """This function returns generated python code to load the files to memory
+    using pandas.
+
+    Args:
+        file_path (str): Folder to read the file.
+        file_name (str): File name.
+        extension (str): Extension of the file.
+        sep (str | None, optional): Separator used in the plain file. Defaults to None.
+        prefix (str, optional): Prefix to name the dataframes. Defaults to "df_".
     """
 
     def get_separator_char(sep):
