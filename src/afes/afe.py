@@ -117,6 +117,14 @@ def generate(
     python_file: str = "code.txt",
     verbose: bool = True,
 ):
+    """Generate pandas code to load the files.
+
+    Args:
+        df (pd.DataFrame): DataFrame with the explored files.
+        python_file (str, optional): Name of the file to save the code.
+            Defaults to "code.txt".
+        verbose (bool, optional): Flag to print the code. Defaults to True.
+    """
     generate_pandas_code(df, python_file=python_file, verbose=verbose)
 
 
@@ -125,6 +133,15 @@ def profile(
     output_path: str | Path = ".",
     profile_tool: str = "ydata-profiling",
 ):
+    """Profile the structured data.
+
+    Args:
+        df (pd.DataFrame): DataFrame with the files to be profiled.
+        output_path (str | Path, optional): Folder to save the HTML reports.
+            Defaults to ".".
+        profile_tool (str, optional): Select which profiling too to use.
+            Defaults to "ydata-profiling".
+    """
     output_path = Path(output_path)
     output_path.mkdir(parents=True, exist_ok=True)
     df.sort_values(by="size", inplace=True)

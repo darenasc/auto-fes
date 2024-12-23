@@ -1,9 +1,5 @@
 # Automated File Exploration System
 
-![](https://img.shields.io/github/license/darenasc/auto-fes)
-![](https://img.shields.io/github/last-commit/darenasc/auto-fes)
-![](https://img.shields.io/github/stars/darenasc/auto-fes?style=social)
-
 Automated exploration of files in a folder structure to extract metadata and 
 potential usage of information.
 
@@ -77,10 +73,6 @@ files you plan to explore.
 |    6 | /content/sample_data/california_housing_train.csv | california_housing_train | .csv      | 1706430 | 1.6 MiB        | 17001 | comma     |
 ```
 
-Checkout the [example.py](src/example.py) file and then run it from a terminal 
-with python as the following code, or using a Jupyter 
-[notebook](src/notebook-example.ipynb).
-
 ## Generate code
 
 Using the dataframe `df_files` generated in the explore phase, you can generate 
@@ -151,5 +143,4 @@ running or it save them in a given directory with the
 
 # Contributing
 
-* Open an [issue](https://github.com/darenasc/auto-fes/issues) to request more 
-* functionalities or feedback.
+* Open an [issue](https://github.com/darenasc/auto-fes/issues) to request more functionalities or feedback.
