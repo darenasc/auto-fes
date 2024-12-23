@@ -1,7 +1,8 @@
 # Automated File Exploration System
 
-Automated exploration of files in a folder structure to extract metadata and 
-potential usage of information.
+Automated exploration of files with structured data on them (`csv`, `txt`, 
+`Excel`) in a folder structure to extract metadata and potential usage of 
+information.
 
 If you have a bunch of sctructured data in plain files, this library is for you.
 

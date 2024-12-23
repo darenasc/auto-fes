@@ -1,5 +1,8 @@
 site_name: Auto File Exploration System
+site_description: Automated exploration of files.
 site_url: https://darenasc.github.io/auto-fes/
+
+repo_url: https://github.com/darenasc/auto-fes/
 
 theme:
   name: "material"
@@ -14,6 +17,8 @@ theme:
     - content.code.annotation
     - content.code.copy
   language: en
+  hljs_languages:
+    - python
 
 plugins:
   - search
