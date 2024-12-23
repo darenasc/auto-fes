@@ -1,6 +1,4 @@
-import re
 from pathlib import Path
-from typing import Protocol
 
 import pandas as pd
 from tqdm.auto import tqdm

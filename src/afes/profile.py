@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-from tqdm.auto import tqdm
 
 from afes.config import BIG_FILE, PLAIN_FORMATS, SEPARATOR_NAMES, SEPARATORS
 
