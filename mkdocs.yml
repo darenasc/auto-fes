@@ -1,4 +1,5 @@
 site_name: Auto File Exploration System
+site_url: https://darenasc.github.io/auto-fes/
 
 theme:
   name: "material"
@@ -26,16 +27,16 @@ extra:
       link: https://twitter.com/darenasc
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/darenasc/
-# markdown_extensions:
-#   - pymdownx.highlight:
-#       anchor_linenums: true
-#   - pymdownx.inlinehilite
-#   - pymdownx.snippets
-#   - admonition
-#   - pymdownx.arithmatex:
-#       generic: true
-#   - footnotes
-#   - pymdownx.details
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  #   - admonition
+  #   - pymdownx.arithmatex:
+  #       generic: true
+  #   - footnotes
+  - pymdownx.details
 #   - pymdownx.superfences
 #   - pymdownx.mark
 #   - attr_list

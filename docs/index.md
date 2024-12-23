@@ -36,15 +36,6 @@ afe.profile(df_files, profile_tool="sweetviz", output_path=OUTPUT_FOLDER)
 * Explore
 * Generate code
 * Profile
-  
-```mermaid
-flowchart LR
-    Explore --> Generate
-    Explore --> Profile
-    Generate --> PandasCode
-    Profile --> ydata-profile@{ shape: doc }
-    Profile --> sweetviz@{ shape: doc }
-```
 
 ## Explore
 
