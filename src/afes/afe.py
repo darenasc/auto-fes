@@ -15,6 +15,17 @@ from afes.utils import get_human_readable_size, get_row_count, get_separator
 
 
 def _get_files(path: Path) -> Iterable:
+    """Returns all the files in a directory.
+
+    Args:
+        path (Path): Path to read files.
+
+    Raises:
+        Exception: If the path is not valid.
+
+    Returns:
+        Iterable: An iterable with all the files in the folder and subfolders.
+    """
     if path.is_dir():
         return path.rglob("*")
     elif path.is_file():

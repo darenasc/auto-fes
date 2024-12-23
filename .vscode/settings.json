@@ -7,10 +7,10 @@
     "isort.args":["--profile", "black"],
     "editor.formatOnSaveMode": "file",
     "editor.formatOnSave": true,
+    "autoDocstring.docstringFormat": "google",
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
     },
-    
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
