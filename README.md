@@ -3,6 +3,7 @@
 ![](https://img.shields.io/github/license/darenasc/auto-fes)
 ![](https://img.shields.io/github/last-commit/darenasc/auto-fes)
 ![](https://img.shields.io/github/stars/darenasc/auto-fes?style=social)
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-526CFE?style=for-the-badge&logo=MaterialForMkDocs&logoColor=white)]([/docs/#readme](https://darenasc.github.io/auto-fes/) "Go to project documentation")
 
 Automated exploration of files with structured data on them (`csv`, `txt`, 
 `Excel`) in a folder structure to extract metadata and potential usage of 
