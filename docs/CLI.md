@@ -1,1 +1,1 @@
-::: afes.__main__
+::: afes
