@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 import pandas as pd
 
-from afes.afe import _get_descriptions, _get_files, explore
+from afes.afe import _get_descriptions, _get_files, explore_files
 
 
 def test__get_files(get_sample_data_path):
@@ -26,6 +26,6 @@ def test__get_descriptions(get_sample_data_path):
 
 
 def test_explore(get_sample_data_path):
-    df = explore(get_sample_data_path)
+    df = explore_files(get_sample_data_path)
     assert isinstance(df, pd.DataFrame)
     assert "separator" in df.columns

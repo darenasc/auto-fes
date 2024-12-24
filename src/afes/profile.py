@@ -5,9 +5,14 @@ import pandas as pd
 from afes.config import BIG_FILE, PLAIN_FORMATS, SEPARATOR_NAMES, SEPARATORS
 
 
-def get_separator_char(sep: str | None) -> str:
-    """
-    Returns the char used as separator.
+def _get_separator_char(sep: str | None) -> str:
+    """Returns the char used as separator.
+
+    Args:
+        sep (str | None): Separator.
+
+    Returns:
+        str: Separator.
     """
     for i, r in enumerate(SEPARATOR_NAMES):
         if sep == r:
@@ -56,7 +61,7 @@ def load_file_with_pandas(
     """
     try:
         if extension in PLAIN_FORMATS:
-            separator = get_separator_char(sep)
+            separator = _get_separator_char(sep)
             df = pd.read_csv(file_path, sep=separator)
             return df
         elif extension in [".xlsx", ".xls"]:

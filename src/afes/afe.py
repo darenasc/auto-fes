@@ -87,7 +87,7 @@ def _get_descriptions(all_files: Iterable) -> pd.DataFrame:
     return df
 
 
-def explore(path: str | Path) -> pd.DataFrame:
+def explore_files(path: str | Path) -> pd.DataFrame:
     """Return a dataframe with all the files.
 
     Args:
@@ -112,7 +112,7 @@ def explore(path: str | Path) -> pd.DataFrame:
     return df
 
 
-def generate(
+def generate_code(
     df: pd.DataFrame,
     python_file: str = "code.txt",
     verbose: bool = True,
@@ -128,7 +128,7 @@ def generate(
     generate_pandas_code(df, python_file=python_file, verbose=verbose)
 
 
-def profile(
+def profile_files(
     df: pd.DataFrame,
     output_path: str | Path = ".",
     profile_tool: str = "ydata-profiling",

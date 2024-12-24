@@ -18,6 +18,23 @@ pip install -q ydata_profiling sweetviz # to make profiling tools work
 ```
 
 ## How to use it
+
+### Command line
+
+```bash
+afes --help
+
+afes explore --help
+afes explore <PATH_TO_FILES_TO_EXPLORE>
+
+afes generate --help
+afes generate <PATH_TO_FILES_TO_EXPLORE>
+
+afes profile --help
+afes profile <PATH_TO_FILES_TO_EXPLORE>
+```
+
+### Python scripts and notebooks
 ```python
 from afes import afe
 

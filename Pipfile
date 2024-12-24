@@ -11,6 +11,7 @@ pipfile = "*"
 nbconvert = "*"
 typing-extensions = "*"
 numpy = "==1.26.4" # required by sweetviz
+typer = "*"
 
 [profiling-packages]
 ydata-profiling = "*"
