@@ -81,7 +81,7 @@ from afes import afe
 TARGET_FOLDER = "<PATH_TO_FILES_TO_EXPLORE>"
 
 # Run exploration on the files
-df_files = afe.explore(TARGET_FOLDER)
+df_files = afe.explore_files(TARGET_FOLDER)
 df_files
 ```
 
@@ -108,7 +108,7 @@ with python as the following code, or using a Jupyter
 Using the dataframe `df_files` generated in the explore phase, you can generate 
 working python pandas code to be used. 
 
-the function `generate()` will generate python code to load the files using 
+The function `generate_files()` will generate python code to load the files using 
 `pandas`.
 
 ```python
@@ -118,8 +118,8 @@ from afes import afe
 TARGET_FOLDER = "<PATH_TO_FILES_TO_EXPLORE>"
 OUTPUT_FOLDER = "<PATH_TO_OUTPUTS>"
 
-df_files = afe.explore(TARGET_FOLDER)
-afe.generate(df_files)
+df_files = afe.explore_files(TARGET_FOLDER)
+afe.generate_code(df_files)
 ```
 
 The generated code will look like this:
@@ -159,10 +159,10 @@ TARGET_FOLDER = "<PATH_TO_FILES_TO_EXPLORE>"
 OUTPUT_FOLDER = "<PATH_TO_OUTPUTS>"
 
 # Run exploration on the files
-df_files = afe.explore(TARGET_FOLDER)
+df_files = afe.explore_files(TARGET_FOLDER)
 
-afe.profile(df_files, profile_tool="ydata-profiling", output_path=OUTPUT_FOLDER) # or
-afe.profile(df_files, profile_tool="sweetviz", output_path=OUTPUT_FOLDER)
+afe.profile_files(df_files, profile_tool="ydata-profiling", output_path=OUTPUT_FOLDER) # or
+afe.profile_files(df_files, profile_tool="sweetviz", output_path=OUTPUT_FOLDER)
 ```
 
 By default, it will process the files using `ydata-profiling` by size order 
