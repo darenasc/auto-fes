@@ -28,10 +28,13 @@ afes explore --help
 afes explore <PATH_TO_FILES_TO_EXPLORE>
 
 afes generate --help
-afes generate <PATH_TO_FILES_TO_EXPLORE>
+afes generate <PATH_TO_FILES_TO_EXPLORE> # or
+afes generate <PATH_TO_FILES_TO_EXPLORE> <OUTPUT_FILE_WITH_CODE>
 
 afes profile --help
-afes profile <PATH_TO_FILES_TO_EXPLORE>
+afes profile <PATH_TO_FILES_TO_EXPLORE> # or
+afes profile <PATH_TO_FILES_TO_EXPLORE> <OUTPUTS_PATH_FOR_REPORTS> # or
+afes profile <PATH_TO_FILES_TO_EXPLORE> <OUTPUTS_PATH_FOR_REPORTS> <PROFILE_TOOL> # 'ydata-profiling' or 'sweetviz'
 ```
 
 ### Python scripts and notebooks
